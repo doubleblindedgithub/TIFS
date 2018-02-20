@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y build-essential curl
 
 # Home and project paths in the VM
 ENV HOME /root
-ENV PROJECTDIR $HOME/tifs_2017
+ENV PROJECTDIR $HOME/tifs
 
 # Anaconda
 RUN curl -o installer.sh https://repo.continuum.io/archive/Anaconda2-5.0.1-Linux-x86_64.sh && \

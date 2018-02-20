@@ -5,6 +5,7 @@ import sys
 import os
 import numpy as np
 from time import clock
+import gc
 import cPickle as pickle
 import pandas as pd
 from docrec.strips.strips import Strips
@@ -52,14 +53,18 @@ for alg_id, algorithm in algorithms.items():
             seed = (hash('D014') + config.seed) % 4294967295
             alg = Proposed(strips, seed=seed, verbose=False)
             matrix = alg(**algorithm.params).matrix
+            gc.collect()
+            print '%d items in garbage' % (len(gc.garbage))
+            sys.stdout.flush()
             for mat in matrix:
                 sol, cost = solve(mat)
+		print sol, '\n', cost
                 nwords = number_of_words(strips.image(sol), 'pt_BR')
-
             # Storing
             df.loc[index] = [alg_id, run, clock() - t0]
             index += 1
     else:
+	continue
         for run in range(1, config.nruns + 1):
             print 'alg=%s run=%d' % (alg_id, run)
             sys.stdout.flush()
