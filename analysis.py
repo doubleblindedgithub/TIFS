@@ -8,16 +8,19 @@ import pandas as pd
 import cPickle as pickle
 from docrec.validation.config.experiments import ExperimentsConfig
 
+# Global configuration
+config = ExperimentsConfig('experiments.cfg', 'dataset.cfg', 'algorithms.cfg')
+
+# (1) Accuracy analysis
+
 # Dataset 1 (category info)
 categories = pickle.load(open('categories_D1-mec.pkl', 'r'))
 doc_category_map = {}
 for category, docs in categories.items():
     for doc in docs:
         doc_category_map[doc] = category.upper()
-print '#documents in D1 (per categories): to = %d, lg = %d, fg = %d' % (len(categories['to']), len(categories['lg']), len(categories['fg']))
-
-# Global configuration
-config = ExperimentsConfig('experiments.cfg', 'dataset.cfg', 'algorithms.cfg')
+print '#documents in D1 (per categories): to = %d, lg = %d, fg = %d' % \
+    (len(categories['to']), len(categories['lg']), len(categories['fg']))
 
 # Data to be analyzed
 df_filename = config.path_cache('testing_proposed.csv')
@@ -53,25 +56,23 @@ df_mean_d1_art_lg = df_mean_d1_art[df_mean_d1_art.category == 'LG']
 df_mean_d1_mec_fg = df_mean_d1_mec[df_mean_d1_mec.category == 'FG']
 df_mean_d1_art_fg = df_mean_d1_art[df_mean_d1_art.category == 'FG']
 
-print 'accuracy for D1 (to): %.2f' % df_mean_d1_mec_to.accuracy.mean()
+print 'Accuracy for D1 (to): %.2f' % df_mean_d1_mec_to.accuracy.mean()
+print 'Accuracy decay for D1: %.2f' % (df_mean_d1_art.accuracy.mean() - df_mean_d1_mec.accuracy.mean())
+print 'Accuracy decay for D1 (to): %.2f' % (df_mean_d1_art_to.accuracy.mean() - df_mean_d1_mec_to.accuracy.mean())
+print 'Accuracy decay for D1 (lg): %.2f' % (df_mean_d1_art_lg.accuracy.mean() - df_mean_d1_mec_lg.accuracy.mean())
+print 'Accuracy decay for D1 (fg): %.2f' % (df_mean_d1_art_fg.accuracy.mean() - df_mean_d1_mec_fg.accuracy.mean())
 
-print 'accuracy decay for D1: %.2f' % (df_mean_d1_art.accuracy.mean() - df_mean_d1_mec.accuracy.mean())
+df_mean_d1_mec_to_la = df_mean_d1_mec_to.copy().sort_values(['accuracy'])
+df_mean_d1_mec_lg_la = df_mean_d1_mec_lg.copy().sort_values(['accuracy'])
+df_mean_d1_mec_fg_la = df_mean_d1_mec_fg.copy().sort_values(['accuracy'])
 
-print 'accuracy decay for D1 (to): %.2f' % (df_mean_d1_art_to.accuracy.mean() - df_mean_d1_mec_to.accuracy.mean())
-print 'accuracy decay for D1 (lg): %.2f' % (df_mean_d1_art_lg.accuracy.mean() - df_mean_d1_mec_lg.accuracy.mean())
-print 'accuracy decay for D1 (fg): %.2f' % (df_mean_d1_art_fg.accuracy.mean() - df_mean_d1_mec_fg.accuracy.mean())
-
-df_mean_d1_mec_to_la = df_mean_d1_mec_to.copy().sort(['accuracy'])
-df_mean_d1_mec_lg_la = df_mean_d1_mec_lg.copy().sort(['accuracy'])
-df_mean_d1_mec_fg_la = df_mean_d1_mec_fg.copy().sort(['accuracy'])
-
-print 'sorted accuracy'
+print 'Sorted accuracy'
 print df_mean_d1_mec_to_la
 print df_mean_d1_mec_lg_la
 print df_mean_d1_mec_fg_la
 
-print 'accuracy for D2: %.2f' % df_mean_d2_mec.accuracy.mean()
-print 'accuracy decay for D2: %.2f' % (df_mean_d2_art.accuracy.mean() - df_mean_d2_mec.accuracy.mean())
+print 'Accuracy for D2: %.2f' % df_mean_d2_mec.accuracy.mean()
+print 'Accuracy decay for D2: %.2f' % (df_mean_d2_art.accuracy.mean() - df_mean_d2_mec.accuracy.mean())
 
 #keys = ['dataset', 'shredding', 'document', 'run']
 #df_best_acc_glob = df_prop_glob.loc[df_prop_glob.groupby(keys)['accuracy'].idxmax()].reset_index()
@@ -133,6 +134,11 @@ data['category'] = data.document.map(doc_category_map)
 print 'Results by category (D1)'
 print data.groupby(keys)['accuracy'].mean()
 
+# (2) Time analysis
+df_filename = config.path_cache('timing.csv')
+df = pd.read_csv(df_filename, sep='\t', encoding='utf-8')
+df = df[~ np.isnan(df.accuracy)]
+df['shredding'] = df.shredding.map({'mec': 'mechanical', 'art': 'artificial'})
 
 
 
