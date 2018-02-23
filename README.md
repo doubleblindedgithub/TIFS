@@ -17,5 +17,3 @@ $ bash run.sh
 
 At the end, the resulting graphs will be placed at the results directory.
 
-## Demonstration
-???
