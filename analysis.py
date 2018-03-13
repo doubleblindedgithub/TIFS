@@ -74,10 +74,31 @@ print df_mean_d1_mec_fg_la
 print 'Accuracy for D2: %.2f' % df_mean_d2_mec.accuracy.mean()
 print 'Accuracy decay for D2: %.2f' % (df_mean_d2_art.accuracy.mean() - df_mean_d2_mec.accuracy.mean())
 
-#keys = ['dataset', 'shredding', 'document', 'run']
+keys = ['dataset', 'shredding', 'document', 'run']
+
+print 'OCR-aided filtering effectiveness only for text'
+d1 = df_prop_glob[df_prop_glob.dataset == 'D1']
+d1['category'] = d1.document.map(doc_category_map)
+d1 = d1[d1.category == 'TO'].drop(['category'], axis=1)
+d2 = df_prop_glob[df_prop_glob.dataset == 'D2']
+df_ocr = pd.concat([d1, d2])
+
+acc_words = df_ocr.loc[df_ocr.groupby(keys)['nwords'].idxmax()].reset_index(drop=True).accuracy
+acc = df_ocr.loc[df_ocr.groupby(keys)['accuracy'].idxmax()].reset_index(drop=True).accuracy
+
+print acc_words
+print acc
+print 'AQUI'
+
 #df_best_acc_glob = df_prop_glob.loc[df_prop_glob.groupby(keys)['accuracy'].idxmax()].reset_index()
+p = float((acc == acc_words).sum()) / len(acc)
+
 #p = float((df_best_acc_glob.accuracy == df_best_glob.accuracy).sum()) / len(df_best_acc_glob)
-#print 'Choice of best solution: %.2f%%' % (100 * p)
+
+#df_best_acc_glob['category'] = df_best_acc_glob.document.map(doc_category_map)
+#print df_best_acc_glob
+
+print 'Choice of best solution: %.2f%%' % (100 * p)
 
 #print '#words for well-chosen solutions' 
 #print df_best_glob[df_best_acc_glob.accuracy == df_best_glob.accuracy].nwords.mean()
@@ -135,10 +156,10 @@ print 'Results by category (D1)'
 print data.groupby(keys)['accuracy'].mean()
 
 # (2) Time analysis
-df_filename = config.path_cache('timing.csv')
-df = pd.read_csv(df_filename, sep='\t', encoding='utf-8')
-df = df[~ np.isnan(df.accuracy)]
-df['shredding'] = df.shredding.map({'mec': 'mechanical', 'art': 'artificial'})
+#df_filename = config.path_cache('timing.csv')
+#df = pd.read_csv(df_filename, sep='\t', encoding='utf-8')
+#df = df[~ np.isnan(df.accuracy)]
+#df['shredding'] = df.shredding.map({'mec': 'mechanical', 'art': 'artificial'})
 
 
 
